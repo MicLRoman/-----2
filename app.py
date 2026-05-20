@@ -232,13 +232,16 @@ with st.sidebar:
     st.markdown("---") # Разделительная линия
     
     st.markdown("<h3>РОЛИ В КОМАНДЕ</h3>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='info-box'>
-    🎨 <b>Художник:</b> Черныш Е.А.<br><br>
-    💻 <b>Программист:</b> Щёголев М.А.<br><br>
-    📊 <b>Аналитик:</b> Шарапов Е.Г.
-    </div>
-    """, unsafe_allow_html=True)
+    # Пытаемся загрузить картинку. Если файла logo.png в папке нет, выводим заглушку-рамку
+    try:
+        st.image("image.png", use_container_width=True)
+    except FileNotFoundError:
+        st.markdown("""
+        <div>
+        🖼️ IMAGE.PNG
+        </div>
+        """, unsafe_allow_html=True)
+
 
 # ==========================================
 # 5. СЕКЦИЯ 1: ВВОД ДАННЫХ И ПЕРВИЧНЫЙ ГРАФИК
