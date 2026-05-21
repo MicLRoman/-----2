@@ -424,9 +424,10 @@ ax.text(x_min + (x_max - x_min) * 0.05,  # Сдвигаем на 5% вправо
 # Стилизуем легенду (рамку со списком линий)
 legend = ax.legend(prop={'weight': 'bold'})
 legend.get_frame().set_linewidth(2)
-legend.get_frame().set_edgecolor('#000000')
-
-st.pyplot(fig)
+# Центрируем и уменьшаем график (создаем пустые колонки по бокам)
+col_left, col_center, col_right = st.columns([1, 2, 1])
+with col_center:
+    st.pyplot(fig)
 
 st.markdown("---")
 
