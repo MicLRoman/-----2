@@ -103,7 +103,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. ИНИЦИАЛИЗАЦИЯ ДАННЫХ (БЕЗ PANDAS)
+# 2. ИНИЦИАЛИЗАЦИЯ ДАННЫХ
 # ==========================================
 # Функция возвращает эталонные данные 23 варианта в виде простого словаря (dict) со списками (list)
 def get_default_data():
@@ -246,6 +246,9 @@ with st.sidebar:
 # ==========================================
 # 5. СЕКЦИЯ 1: ВВОД ДАННЫХ И ПЕРВИЧНЫЙ ГРАФИК
 # ==========================================
+st.markdown("<h1>ПРОГНОЗИРОВАНИЕ ЭКОНОМИЧЕСКИХ ПОКАЗАТЕЛЕЙ ПРОИЗВОДСТВА ЛИНЕЙНОЙ РЕГРЕССИИ</h1>", unsafe_allow_html=True)
+st.markdown("---")
+
 # Вывод главного заголовка с акцентным словом (class='highlight')
 st.markdown("<h1>1. DATA <span class='highlight'>INPUT.</span></h1>", unsafe_allow_html=True)
 st.write("Отредактируйте таблицу. График обновится автоматически.")
@@ -257,7 +260,7 @@ with col_btn1:
 with col_btn2:
     if st.button("ОЧИСТИТЬ ТАБЛИЦУ"): clear_data()
 with col_btn3:
-    if st.button("ДЕФОЛТНЫЕ (ВАР. 23)"): default_data()
+    if st.button("ВАРИАНТ 23"): default_data()
 
 st.write("") # Пустая строка для визульного отступа
 
@@ -290,7 +293,7 @@ with col_plot:
     # Выводим график в интерфейс Streamlit
     st.pyplot(fig0)
 
-st.markdown("<h3>БАЗОВЫЕ СУММЫ (АПРИОРИ):</h3>", unsafe_allow_html=True)
+st.markdown("<h3>ПОКАЗАТЕЛИ:</h3>", unsafe_allow_html=True)
 # Используем st.latex для красивого математического вывода.
 # Символ `r` говорит питону "не трогай обратные слэши", а `f` позволяет вставлять переменные
 st.latex(rf"\sum x_i = {sum_x:.4f} \quad\quad \sum y_i = {sum_y:.4f}")
@@ -302,21 +305,24 @@ st.markdown("---")
 # 6. СЕКЦИЯ 2: РЕГРЕССИЯ
 # ==========================================
 st.markdown("<h1>2. BUILD THE <span class='highlight'>MODEL.</span></h1>", unsafe_allow_html=True)
-st.write("Решение СЛАУ (Системы линейных алгебраических уравнений) тремя методами.")
+st.write("Нахождение коэффициентов a и b производится двумя методами: Методом наименьших квадратов (МНК) и Матричным методом. В рамках МНК решение системы линейных алгебраических уравнений (СЛАУ) выполняется методами Гаусса и Крамера.")
+
+st.markdown("<h2>МЕТОД НАИМЕНЬШИХ КВАДРАТОВ (МНК)</h2>", unsafe_allow_html=True)
 
 # ---------------- ГАУСС ----------------
 st.markdown("<h3>1. МЕТОД ГАУССА</h3>", unsafe_allow_html=True)
 # Распаковываем все шаги Гаусса, полученные из нашей функции
 a_g, b_g, k, diff_b, diff_y = solve_gauss_steps(sum_x, sum_y, sum_x2, sum_xy, n)
 
-st.write("ИСХОДНАЯ СИСТЕМА")
-# Двойные {{ }} нужны, чтобы f-строка Питона не пыталась распарсить команду LaTeX \begin{cases}
-st.latex(rf"\begin{{cases}} {sum_x:.2f}a + {n}b = {sum_y:.2f} \\ {sum_x2:.2f}a + {sum_x:.2f}b = {sum_xy:.2f} \end{{cases}}")
-st.write(f"ШАГ 1: УРАВНИВАЕМ КОЭФФИЦИЕНТЫ")
-st.latex(rf"{sum_x2:.2f}a + {n*k:.2f}b = {sum_y*k:.2f}")
-st.write("ШАГ 2: ВЫЧИТАЕМ И НАХОДИМ $b$")
+st.write("РАСШИРЕННАЯ МАТРИЦА СИСТЕМЫ")
+# Двойные {{ }} нужны, чтобы f-строка Питона не пыталась распарсить команду LaTeX
+st.latex(rf"\left(\begin{{array}}{{cc|c}} {sum_x:.2f} & {n} & {sum_y:.2f} \\ {sum_x2:.2f} & {sum_x:.2f} & {sum_xy:.2f} \end{{array}}\right)")
+st.write(f"ШАГ 1: УРАВНИВАЕМ КОЭФФИЦИЕНТЫ ПЕРВОГО СТОЛБЦА")
+st.latex(rf"\left(\begin{{array}}{{cc|c}} {sum_x2:.2f} & {n*k:.2f} & {sum_y*k:.2f} \\ {sum_x2:.2f} & {sum_x:.2f} & {sum_xy:.2f} \end{{array}}\right)")
+st.write("ШАГ 2: ВЫЧИТАЕМ ИЗ ВТОРОЙ СТРОКИ ПЕРВУЮ И НАХОДИМ $b$")
+st.latex(rf"\left(\begin{{array}}{{cc|c}} {sum_x2:.2f} & {n*k:.2f} & {sum_y*k:.2f} \\ 0 & {diff_b:.4f} & {diff_y:.4f} \end{{array}}\right)")
 st.latex(rf"{diff_b:.4f}b = {diff_y:.4f} \implies \mathbf{{b = {b_g:.4f}}}")
-st.write("ШАГ 3: ПОДСТАВЛЯЕМ И НАХОДИМ $a$")
+st.write("ШАГ 3: ПОДСТАВЛЯЕМ В ПЕРВУЮ СТРОКУ И НАХОДИМ $a$")
 st.latex(rf"\mathbf{{a = {a_g:.4f}}}")
 
 # ---------------- КРАМЕР ----------------
@@ -325,13 +331,15 @@ st.markdown("<h3>2. МЕТОД КРАМЕРА</h3>", unsafe_allow_html=True)
 a_c, b_c, delta, delta_a, delta_b = solve_cramer_steps(sum_x, sum_y, sum_x2, sum_xy, n)
 
 st.write("ОПРЕДЕЛИТЕЛИ СИСТЕМЫ")
-st.latex(rf"\Delta = {delta:.4f}, \quad \Delta_a = {delta_a:.4f}, \quad \Delta_b = {delta_b:.4f}")
+st.latex(rf"\Delta = \begin{{vmatrix}} {sum_x2:.2f} & {sum_x:.2f} \\ {sum_x:.2f} & {n} \end{{vmatrix}} = {sum_x2:.2f} \cdot {n} - {sum_x:.2f} \cdot {sum_x:.2f} = {delta:.4f}")
+st.latex(rf"\Delta_a = \begin{{vmatrix}} {sum_xy:.2f} & {sum_x:.2f} \\ {sum_y:.2f} & {n} \end{{vmatrix}} = {sum_xy:.2f} \cdot {n} - {sum_x:.2f} \cdot {sum_y:.2f} = {delta_a:.4f}")
+st.latex(rf"\Delta_b = \begin{{vmatrix}} {sum_x2:.2f} & {sum_xy:.2f} \\ {sum_x:.2f} & {sum_y:.2f} \end{{vmatrix}} = {sum_x2:.2f} \cdot {sum_y:.2f} - {sum_xy:.2f} \cdot {sum_x:.2f} = {delta_b:.4f}")
 st.write("КОРНИ")
 st.latex(rf"a = \frac{{\Delta_a}}{{\Delta}} = \mathbf{{{a_c:.4f}}}, \quad b = \frac{{\Delta_b}}{{\Delta}} = \mathbf{{{b_c:.4f}}}")
 
 # ---------------- МАТРИЦЫ ----------------
 st.write("")
-st.markdown("<h3>3. МАТРИЧНЫЙ МЕТОД</h3>", unsafe_allow_html=True)
+st.markdown("<h2>МАТРИЧНЫЙ МЕТОД</h2>", unsafe_allow_html=True)
 a_m, b_m, XT_X, XT_X_inv, XT_Y = solve_matrix_steps(x, y)
 if XT_X is not None:
     st.write("МАТРИЦА $X^T X$")
@@ -368,11 +376,23 @@ if std_x * std_y != 0:
 else:
     r_xy = 0
 
-# Выводим 3 плашки метрик в один ряд
-m1, m2, m3 = st.columns(3)
+# --- РАСЧЕТ ОШИБОК АППРОКСИМАЦИИ ---
+y_theoretical = a_final * x + b_final
+# Сумма квадратов ошибок (sum e_i^2)
+sum_e2 = np.sum((y - y_theoretical)**2)
+# Среднеквадратическая ошибка (RMSE)
+rmse = np.sqrt(sum_e2 / n)
+
+st.write("ОЦЕНКА ТОЧНОСТИ МОДЕЛИ")
+st.latex(r"RMSE = \sqrt{\frac{\sum e_i^2}{n}}")
+st.latex(rf"RMSE = \sqrt{{\frac{{\sum e_i^2}}{{n}}}} = \sqrt{{\frac{{{sum_e2:.5f}}}{{{n}}}}} \approx \mathbf{{{rmse:.3f}}} \text{{ тыс. руб.}}")
+
+# Выводим 4 плашки метрик в один ряд
+m1, m2, m3, m4 = st.columns(4)
 m1.metric("Параметр a (Наклон)", round(a_final, 4))
 m2.metric("Параметр b (Сдвиг)", round(b_final, 4))
 m3.metric("Корреляция (r_xy)", round(r_xy, 4))
+m4.metric("RMSE", round(rmse, 3))
 
 st.write("")
 
@@ -430,6 +450,8 @@ col1, col2 = st.columns(2) # Две колонки для двух задач
 
 with col1:
     st.markdown("<h3>ЗАДАЧА 1: ИНТЕРВАЛ</h3>", unsafe_allow_html=True)
+    st.write("ОБЩАЯ ФОРМУЛА:")
+    st.latex(r"P(y_{min} \le Y \le y_{max}) = \Phi\left(\frac{y_{max} - M[Y]}{\sigma}\right) - \Phi\left(\frac{y_{min} - M[Y]}{\sigma}\right)")
     # Поля для ввода исходных данных первой задачи
     x_val_1 = st.number_input("Объем (X):", value=1.0)
     min_y = st.number_input("От (Y):", value=3.5)
@@ -460,6 +482,8 @@ with col1:
 
 with col2:
     st.markdown("<h3>ЗАДАЧА 2: ОТКЛОНЕНИЕ</h3>", unsafe_allow_html=True)
+    st.write("ОБЩАЯ ФОРМУЛА:")
+    st.latex(r"P(|Y - M[Y]| \le \delta) = 2 \cdot \Phi\left(\frac{\delta}{\sigma}\right)")
     # Поля для ввода данных второй задачи
     x_val_2 = st.number_input("Объем (X) 2:", value=1.2)
     delta = st.number_input("Макс. отклонение (δ):", value=0.6)
