@@ -162,7 +162,10 @@ def calculate_sums(data):
 # Решение системы методом Гаусса (исключение переменных)
 def solve_gauss_steps(sum_x, sum_y, sum_x2, sum_xy, n):
     # Ищем коэффициент k, чтобы уравнять a в обоих уравнениях
-    k = sum_x2 / sum_x if sum_x != 0 else 0
+    if sum_x != 0:
+        k = sum_x2 / sum_x
+    else: 
+        k = 0
     
     # Умножаем первое уравнение на k
     new_b1, new_y1 = n * k, sum_y * k
@@ -171,8 +174,15 @@ def solve_gauss_steps(sum_x, sum_y, sum_x2, sum_xy, n):
     diff_b, diff_y = sum_x - new_b1, sum_xy - new_y1
     
     # Находим b и a
-    b = diff_y / diff_b if diff_b != 0 else 0
-    a = (sum_y - n * b) / sum_x if sum_x != 0 else 0
+    if diff_b != 0:
+        b = diff_y / diff_b
+    else:
+        b = 0
+    
+    if sum_x != 0:
+        a = (sum_y - n * b) / sum_x
+    else:
+        a = 0
     
     # Возвращаем не только корни, но и промежуточные шаги для красивого вывода
     return a, b, k, diff_b, diff_y
@@ -186,8 +196,12 @@ def solve_cramer_steps(sum_x, sum_y, sum_x2, sum_xy, n):
     delta_b = (sum_x2 * sum_y) - (sum_x * sum_xy)
     
     # Корни - это отношение побочного к главному
-    a = delta_a / delta if delta != 0 else 0
-    b = delta_b / delta if delta != 0 else 0
+    if delta != 0:
+        a = delta_a / delta
+        b = delta_b / delta
+    else:
+        a = 0
+        b = 0
     return a, b, delta, delta_a, delta_b
 
 # Решение матричным методом: B = (X^T * X)^-1 * X^T * Y
